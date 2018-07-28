@@ -38,7 +38,6 @@ public class BluetoothService {
     private void addBondDevicesToListView() {
         ArrayList<HashMap<String, Object>> data = new ArrayList<HashMap<String, Object>>();
         int count = this.bondDevices.size();
-        Log.e(TAG,"已绑定设备数量：" + count);
         for (int i = 0; i < count; i++) {
             HashMap<String, Object> map = new HashMap<String, Object>();
             map.put("deviceName", this.bondDevices.get(i).getName());
@@ -51,12 +50,12 @@ public class BluetoothService {
         // 把适配器装载到listView中
         this.bondDevicesListView.setAdapter(simpleAdapter);
 
-        this.bondDevicesListView
-                .setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        this.bondDevicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View arg1,
                                             int arg2, long arg3) {
+                        Log.e(TAG,"点击了---------》");
                         BluetoothDevice device = bondDevices.get(arg2);
                         Intent intent = new Intent(context,PrintDataActivity.class);
                         intent.putExtra("deviceAddress", device.getAddress());
@@ -72,7 +71,6 @@ public class BluetoothService {
     private void addUnbondDevicesToListView() {
         ArrayList<HashMap<String, Object>> data = new ArrayList<HashMap<String, Object>>();
         int count = this.unbondDevices.size();
-        Log.e(TAG,"未绑定设备数量：" + count);
         for (int i = 0; i < count; i++) {
             HashMap<String, Object> map = new HashMap<String, Object>();
             map.put("deviceName", this.unbondDevices.get(i).getName());
@@ -206,7 +204,7 @@ public class BluetoothService {
      */
     private BroadcastReceiver receiver = new BroadcastReceiver() {
 
-        ProgressDialog progressDialog = null;
+        //ProgressDialog progressDialog = null;
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -219,18 +217,21 @@ public class BluetoothService {
                 } else {
                     addUnbondDevices(device);
                 }
+                addUnbondDevicesToListView();
+                addBondDevicesToListView();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                progressDialog = ProgressDialog.show(context, "请稍等...",
-                        "搜索蓝牙设备中...", true);
+                /*progressDialog = ProgressDialog.show(context, "请稍等...",
+                        "搜索蓝牙设备中...", true);*/
 
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED
                     .equals(action)) {
-                Log.e(TAG,"设备搜索完毕");
-                progressDialog.dismiss();
+                /*if(progressDialog!=null){
+                    progressDialog.dismiss();
+                }*/
 
                 addUnbondDevicesToListView();
                 addBondDevicesToListView();
-                // bluetoothAdapter.cancelDiscovery();
+                bluetoothAdapter.cancelDiscovery();
             }
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
                 if (bluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {

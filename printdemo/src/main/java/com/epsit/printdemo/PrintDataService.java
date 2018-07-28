@@ -6,24 +6,25 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.UUID;
 
 public class PrintDataService {
     public static String TAG ="PrintDataService";
     private Context context = null;
     private String deviceAddress = null;
-    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter
-            .getDefaultAdapter();
+    private BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private BluetoothDevice device = null;
     private static BluetoothSocket bluetoothSocket = null;
     private static OutputStream outputStream = null;
-    private static final UUID uuid = UUID
-            .fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private boolean isConnection = false;
     final String[] items = {"复位打印机", "标准ASCII字体", "压缩ASCII字体", "字体不放大",
             "宽高加倍", "取消加粗模式", "选择加粗模式", "取消倒置打印", "选择倒置打印", "取消黑白反显", "选择黑白反显",
@@ -64,9 +65,24 @@ public class PrintDataService {
      */
     public boolean connect() {
         if (!this.isConnection) {
+            Method createBondMethod = null;
             try {
-                bluetoothSocket = this.device
-                        .createRfcommSocketToServiceRecord(uuid);
+                createBondMethod = BluetoothDevice.class.getMethod("createBond");
+                createBondMethod.invoke(device);
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            }catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            try {
+                int sdk = Build.VERSION.SDK_INT;
+                if (sdk >= 10) {
+                    bluetoothSocket = this.device.createInsecureRfcommSocketToServiceRecord(uuid);
+                } else {
+                    bluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
+                }
                 bluetoothSocket.connect();
                 outputStream = bluetoothSocket.getOutputStream();
                 this.isConnection = true;
@@ -92,8 +108,12 @@ public class PrintDataService {
     public static void disconnect() {
         Log.e(TAG,"断开蓝牙设备连接");
         try {
-            bluetoothSocket.close();
-            outputStream.close();
+            if(bluetoothSocket!=null){
+                bluetoothSocket.close();
+            }
+            if(outputStream!=null){
+                outputStream.close();
+            }
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

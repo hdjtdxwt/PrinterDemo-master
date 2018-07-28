@@ -61,8 +61,7 @@ public class BluetoothActivity extends AppCompatActivity {
     }
 
     private void initListener() {
-        ListView unbondDevices = (ListView) this
-                .findViewById(R.id.unbondDevices);
+        ListView unbondDevices = (ListView) this .findViewById(R.id.unbondDevices);
         ListView bondDevices = (ListView) this.findViewById(R.id.bondDevices);
         Button switchBT = (Button) this.findViewById(R.id.openBluetooth_tb);
         Button searchDevices = (Button) this.findViewById(R.id.searchDevices);
@@ -85,7 +84,8 @@ public class BluetoothActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_BACK:
-                return true;
+                PrintDataService.disconnect();
+                return false;
         }
         return super.onKeyDown(keyCode, event);
     }
